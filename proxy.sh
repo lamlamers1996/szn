@@ -1,47 +1,35 @@
 #!/bin/bash
 
-# Cập nhật danh sách gói và cài đặt Squid
-echo "Updating package list and installing Squid..."
+# Cập nhật danh sách gói
+echo "Cập nhật danh sách gói..."
 sudo apt update
+
+# Cài đặt Squid
+echo "Cài đặt Squid..."
 sudo apt install -y squid
 
-# Sao lưu cấu hình Squid gốc
-echo "Backing up original Squid configuration..."
+# Sao lưu file cấu hình mặc định
+echo "Sao lưu file cấu hình mặc định..."
 sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak
 
-# Cấu hình Squid cơ bản để cho phép truy cập từ xa
-echo "Configuring Squid for remote access..."
-sudo tee /etc/squid/squid.conf > /dev/null <<EOL
-# Squid Configuration
-
+# Cấu hình Squid
+echo "Cấu hình Squid..."
+sudo bash -c 'cat <<EOL > /etc/squid/squid.conf
 http_port 46996
-
-# Allow all connections (thay đổi theo nhu cầu bảo mật của bạn)
-acl all src 0.0.0.0/0
+acl all src all
 http_access allow all
-
-# Default Squid settings
-acl manager proto cache_object
-acl localhost src 127.0.0.1/32 ::1
-http_access allow manager localhost
-http_access deny manager
-
-# Allow all connections from any IP
-acl localnet src 0.0.0.0/0
-http_access allow localnet
-
-# Deny all other connections
-http_access deny all
-EOL
+EOL'
 
 # Khởi động lại dịch vụ Squid
-echo "Restarting Squid service..."
+echo "Khởi động lại dịch vụ Squid..."
 sudo systemctl restart squid
 
-# Mở cổng 3128 trên tường lửa UFW
-echo "Allowing port 3128 through UFW..."
-sudo ufw allow 46996/tcp
-
-# Kiểm tra trạng thái của Squid
-echo "Checking Squid status..."
+# Kích hoạt Squid để khởi động cùng hệ thống
+echo "Kích hoạt Squid để khởi động cùng hệ thống..."
+sudo systemctl enable squid
+ufw allow 46996
+# Kiểm tra trạng thái dịch vụ Squid
+echo "Kiểm tra trạng thái dịch vụ Squid..."
 sudo systemctl status squid
+
+echo "Hoàn tất cài đặt và cấu hình Squid."
