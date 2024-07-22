@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 9998;
+const port = 9988;
 var exec = require("child_process").exec;
 
 app.get("/api/attack", (req, res) => {
@@ -24,7 +24,7 @@ app.get("/api/attack", (req, res) => {
     return res.status(400).send(err_key);
   }
 
-  if (time > 300) {
+  if (time > 30000) {
     const err_time = {
       status: `error`,
       message: `Error Time < 60 Second`,
