@@ -9,16 +9,16 @@ sudo apt install -y squid
 echo "Backing up original Squid configuration..."
 sudo cp /etc/squid/squid.conf /etc/squid/squid.conf.bak
 
-# Cấu hình Squid cơ bản
-echo "Configuring Squid..."
+# Cấu hình Squid cơ bản để cho phép truy cập từ xa
+echo "Configuring Squid for remote access..."
 sudo tee /etc/squid/squid.conf > /dev/null <<EOL
 # Squid Configuration
 
 http_port 46996
 
-acl localnet src 192.168.1.0/24  # Thay đổi dải mạng phù hợp với mạng của bạn
-http_access allow localnet
-http_access deny all
+# Allow all connections (thay đổi theo nhu cầu bảo mật của bạn)
+acl all src 0.0.0.0/0
+http_access allow all
 
 # Default Squid settings
 acl manager proto cache_object
@@ -26,15 +26,21 @@ acl localhost src 127.0.0.1/32 ::1
 http_access allow manager localhost
 http_access deny manager
 
-acl localnet src 192.168.1.0/24  # Thay đổi dải mạng phù hợp với mạng của bạn
+# Allow all connections from any IP
+acl localnet src 0.0.0.0/0
 http_access allow localnet
+
+# Deny all other connections
 http_access deny all
 EOL
 
 # Khởi động lại dịch vụ Squid
 echo "Restarting Squid service..."
 sudo systemctl restart squid
-ufw allow 46996
+
+# Mở cổng 3128 trên tường lửa UFW
+echo "Allowing port 3128 through UFW..."
+sudo ufw allow 46996/tcp
 
 # Kiểm tra trạng thái của Squid
 echo "Checking Squid status..."
